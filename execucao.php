@@ -4,27 +4,32 @@ require_once("modelo/Pedido.php");
 require_once("modelo/Prato.php");
 
 //Função para listar os pedidos
-function listarPedidos ($pedidos) {
-    if(count($pedidos) > 0) {
-        foreach($pedidos as $i => $pedido)
-            printf("O cliente " . 
-    } else 
-        echo "Nenhum prato cadastrado.\n";
+function listarPedidos($pedidos) {
+    if (count($pedidos) > 0) {
+        foreach ($pedidos as $i => $pedido) {
+            echo ($i+1) . ") O cliente " . $pedido->getNomeCliente() .
+                 ", foi atendido pelo garçom " . $pedido->getNomeGarcom() .
+                 ", pediu um prato de " . $pedido->getPrato()->getNome() .
+                 " no valor de R$ " . $pedido->getPrato()->getValor() . "\n";
+        }
+    } else {
+        echo "Nenhum pedido cadastrado.\n";
+    }
 }
 
 function retornarPrato($pratos, $numero) {
-    foreach($pratos as $p) {
-        if($numero == $p->getNumero())
+    foreach ($pratos as $p) {
+        if ($numero == $p->getNumero()) {
             return $p;
+        }
     }
-
     return null;
 }
 
 
 $p1 = new Prato;
 $p1->setNumero(1);
-$p1->setNome("Camarão à milanesa");
+$p1->setNome("Camarão à Milanesa");
 $p1->setValor(110);
 
 $p2 = new Prato;
@@ -47,9 +52,9 @@ $p5->setNumero(5);
 $p5->setNome("Risoto ao Funghi");
 $p5->setValor(70);
 
-$pratos = array(
-    $p1, $p2, $p3, $p4, $p5
-);
+$pratos = array($p1, $p2, $p3, $p4, $p5);
+
+$pedidos = array();
 
 //menu
 do {
@@ -59,47 +64,63 @@ do {
     echo "3- Listar \n";
     echo "4- Total de vendas \n";
     echo "0- Sair\n";
-    $opcao = readline ("Informe a opção: ");
+    $opcao = readline("Informe a opção: ");
 
     echo "\n";
 
-    switch($opcao){
+    switch ($opcao) {
         case 1:
+            //cadastrar pedido
             $pedido = new Pedido();
             $pedido->setNomeCliente(readline("Informe o nome do cliente: "));
             $pedido->setNomeGarcom(readline("Informe o nome do garçom: "));
             
-            //Exibir os pratos para usuário
-            foreach($pratos as $p) {
-                echo $p->getNumero() . " - " . $p->getNome() . " - " . $p->getValor() . "\n";
+            //exibir os pratos p usuário
+            foreach ($pratos as $p) {
+                echo $p->getNumero() . " - " . $p->getNome() . " - R$ " . $p->getValor() . "\n";
             }
 
-            //Informar o número do prato que ele quer
+            //informar o num do prato q ele quer
             $numeroPrato = readline("Informe o número do prato: ");
             $prato = retornarPrato($pratos, $numeroPrato);
-            $pedido->setPrato($prato);
+
+            if ($prato !== null) {
+                $pedido->setPrato($prato);
+                $pedidos[] = $pedido;
+                echo "Pedido cadastrado com sucesso!\n";
+            } else {
+                echo "Prato inválido!\n";
+            }
+            break;
 
         case 2:
-            //Cancelar
-             listarPedidos($pedidos);
-            if(count($pedidos) > 0) {
+            //cancelar pedido
+            if (count($pedidos) > 0) {
+                listarPedidos($pedidos);
                 $idx = readline("Informe o número do pedido para excluir: ");
-                if($idx > 0 && $idx <= count($pedidos))
+                if ($idx > 0 && $idx <= count($pedidos)) {
                     array_splice($pedidos, $idx-1, 1);
-                else
+                    echo "Pedido cancelado!\n";
+                } else {
                     echo "Número inválido!\n";
+                }
+            } else {
+                echo "Nenhum pedido para cancelar.\n";
             }
             break;
 
         case 3:
-            //Listar
-            foreach ($pedidos as $pedido) {
-                print("O cliente " . $pedido->getNomeCliente() . ", foi atendido pelo garçom " . $pedido->setNomeGarcom() . ", pediu um prato de " . $pedido->setPrato() . ", no valor de R$" . $pedido->setValor());
-            }
+            //listar pedidos
+            listarPedidos($pedidos);
             break;
 
         case 4:
-
+            //total de vendas
+            $total = 0;
+            foreach ($pedidos as $pedido) {
+                $total += $pedido->getPrato()->getValor();
+            }
+            echo "Total de vendas: R$ " . $total . "\n";
             break;
 
         case 0:
@@ -109,4 +130,4 @@ do {
         default:
             echo "Opção inválida!\n";
     }
-}while($opcao != 0);
+} while ($opcao != 0);
